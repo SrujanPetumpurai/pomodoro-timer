@@ -1,0 +1,41 @@
+.timer {
+  position: relative;
+  height: 300px;
+  width: 300px;
+  padding:20px;
+}
+.timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: semibold;
+}
+
+.outer{
+height: 280px;
+width: 280px;
+border-radius: 50%;
+padding:30px;
+color: white;
+position: absolute;
+box-shadow:2px 2px 10px rgba(0,0,0,0.15) inset;
+}
+.inner{
+height: 220px;
+width: 220px;
+border-radius: 50%;
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+box-shadow:0px 2px 5px gray;
+}
+.progress-ring{
+  position: absolute;
+  top:0;
+  left: 0;
+}
+circle:nth-child(2){
+  stroke: rgb(19, 106, 140);
+}

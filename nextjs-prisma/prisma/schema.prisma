@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MedalTier {
+  Bronze
+  Silver
+  Gold
+  Diamond
+  Ruby
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String?
+  email           String?  @unique
+  image           String?
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  topics Topic[]
+  medals Medal[]
+  focusSessions FocusSession[]
+}
+
+model Medal {
+  id     String    @id @default(cuid())
+  userId String
+  tier   MedalTier
+  date   DateTime  
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String   @default("#D97757")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+}
+model FocusSession {
+  id          String   @id @default(cuid())
+  userId      String
+  completedAt DateTime @default(now())
+  date        DateTime 
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}

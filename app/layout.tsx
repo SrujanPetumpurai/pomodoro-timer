@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from "next";
+import { Pixelify_Sans,Tiny5 } from "next/font/google";
+import ParallaxBackground from './components/ParallaxBackground'
+const pixelify = Pixelify_Sans({
+  subsets:['latin'],
+  variable:'--font-pixelify',
+})
+const tiny5 = Tiny5({
+  subsets:['latin'],
+  weight:'400',
+  variable:'--font-Tiny5',
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,9 +25,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className={`flex flex-col items-center gap-8 ${pixelify.variable} ${tiny5.variable}`}>
+        <ParallaxBackground/>
+        {children}
+        </body>
     </html>
   );
 }
