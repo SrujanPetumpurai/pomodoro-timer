@@ -1,5 +1,6 @@
 'use client'
 import './Timer.css'
+import { m6x11 } from '../../lib/fonts';
 import IconBtn from "./IconBtn" 
 import { Maximize,Play } from "lucide-react";
 import { useState, useEffect } from 'react';
@@ -96,8 +97,8 @@ export default function Timer(){
                         style={{ transition: 'stroke-dashoffset 1s linear' }}
                     />
                 </svg>
-                <div className="inner font-tiny5 font-light">
-                    <span className='timer-text text-7xl text-black'>{displayTime}</span>
+                <div className="inner  font-light">
+                    <span className={`timer-text ${m6x11.className} text-9xl text-gray-900`}>{displayTime}</span>
                 </div>
                </div>
             </section>

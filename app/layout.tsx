@@ -1,7 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Pixelify_Sans,Tiny5 } from "next/font/google";
+import { Pixelify_Sans,Tiny5,Jersey_10 } from "next/font/google";
 import ParallaxBackground from './components/ParallaxBackground'
+
+
 const pixelify = Pixelify_Sans({
   subsets:['latin'],
   variable:'--font-pixelify',
@@ -10,6 +12,12 @@ const tiny5 = Tiny5({
   subsets:['latin'],
   weight:'400',
   variable:'--font-Tiny5',
+})
+
+const jersey = Jersey_10({
+  subsets:['latin'],
+  weight:'400',
+  variable:'--font-jersey'
 })
 
 export const metadata: Metadata = {
@@ -26,7 +34,7 @@ export default function RootLayout({
     <html
       lang="en"
     >
-      <body className={`flex flex-col items-center gap-8 ${pixelify.variable} ${tiny5.variable}`}>
+      <body className={`flex flex-col items-center gap-8 ${pixelify.variable} ${jersey.variable} ${tiny5.variable}`}>
         <ParallaxBackground/>
         {children}
         </body>

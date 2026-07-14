@@ -8,8 +8,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-weight: semibold;
+  transform: translate(-50%, -50%) scaleY(0.99) scaleX(0.70);
 }
 
 .outer{

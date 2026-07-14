@@ -20,8 +20,10 @@
 @theme inline{
     --font-pixelify:var(--font-pixelify);
     --font-giest:var(--font-geist-pixel-square);
-    --font-tiny5:var(--font-Tiny5)
+    --font-tiny5:var(--font-Tiny5);
+    --font-jersey:var(--font-jersey);
 }
+
 
 @keyframes scroll-left {
   from {
