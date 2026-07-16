@@ -12,7 +12,7 @@ import { logFocusSession } from '@/lib/focusSession'
 import type { ModeKey } from './ModeTab'
 
 const DURATIONS: Record<ModeKey, number> = {
-    pomodoro: 20,
+    pomodoro: 1500,
     short_break: 300,
     long_break: 600,
 }
