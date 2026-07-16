@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Pixelify_Sans,Tiny5,Jersey_10 } from "next/font/google";
 import ParallaxBackground from './components/ParallaxBackground'
-
+import NavBar from "./components/NavBar";
 
 const pixelify = Pixelify_Sans({
   subsets:['latin'],
@@ -36,6 +36,7 @@ export default function RootLayout({
     >
       <body className={`flex flex-col items-center gap-8 ${pixelify.variable} ${jersey.variable} ${tiny5.variable}`}>
         <ParallaxBackground/>
+        <NavBar></NavBar>
         {children}
         </body>
     </html>

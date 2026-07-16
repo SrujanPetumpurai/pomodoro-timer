@@ -67,6 +67,7 @@ model Topic {
   name      String
   color     String   @default("#D97757")
   createdAt DateTime @default(now())
+  focusSessions FocusSession[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -75,10 +76,14 @@ model Topic {
 model FocusSession {
   id          String   @id @default(cuid())
   userId      String
+  topicId     String?
+  duration    Int      @default(25)
   completedAt DateTime @default(now())
   date        DateTime 
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
 
   @@index([userId, date])
+  @@index([userId, topicId])
 }
