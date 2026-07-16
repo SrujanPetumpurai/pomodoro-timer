@@ -1,13 +1,14 @@
 import { useState } from "react";
 import Login from "./Login";
+import { auth } from "@/auth";
 
 const OPTIONS = [
   { id: "login", label: "login", icon: UserIcon, component: Login },
 ];
 
-export default function ProfileComponent({ onClose = () => {} }) {
+export default async function ProfileComponent({ onClose = () => {} }) {
   const [activeId, setActiveId] = useState(OPTIONS[0].id);
-
+  const session = await auth();
   const active = OPTIONS.find((o) => o.id === activeId);
   const ActiveComponent = active?.component;
 
@@ -17,7 +18,6 @@ export default function ProfileComponent({ onClose = () => {} }) {
         <h1 className="text-2xl text-gray-800 mb-8 capitalize">{active?.label}</h1>
 
         <div className="flex gap-8">
-          {/* sidebar — profile owns this */}
           <div className="w-56 shrink-0">
             <div className="bg-gray-100 rounded-xl p-2 flex flex-col gap-1">
               {OPTIONS.map((opt) => {
@@ -41,9 +41,8 @@ export default function ProfileComponent({ onClose = () => {} }) {
             </div>
           </div>
 
-          {/* right side — whichever option component is active renders here */}
           <div className="flex-1">
-            {ActiveComponent && <ActiveComponent />}
+            {ActiveComponent && <ActiveComponent user={session?.user ?? null} />}
           </div>
         </div>
 
