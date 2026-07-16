@@ -30,7 +30,7 @@ export default function NavBarClient({ user }: { user: SessionUser }) {
       "
     >
       <span className="font-pixelify text-2xl text-[#E5F9FE]">
-        pomo<span className="text-[#1A85D9]">bear</span>
+        Ninja<span className="text-[#1A85D9]">doro</span>
       </span>
 
       <div className="flex items-center gap-3">
