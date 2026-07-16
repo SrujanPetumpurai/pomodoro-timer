@@ -19,7 +19,7 @@ export default async function Topics({ topicId }: { topicId?: string }) {
         <div key={t.topicId ?? 'no-topic'}>
           <span>{t.topicId ?? 'Uncategorized'}</span>
           <span>{t._sum.duration ?? 0} min</span>
-          <span>{t._count} sessions</span>
+          <span>{t._count._all} sessions</span>
         </div>
       ))}
     </div>
