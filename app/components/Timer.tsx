@@ -2,7 +2,7 @@
 import './Timer.css'
 import { m6x11 } from '../../lib/fonts'
 import IconBtn from "./IconBtn"
-import { Maximize, Play } from "lucide-react"
+import { Maximize, Play,Pause } from "lucide-react"
 import { useState, useEffect } from 'react'
 import type { Session } from 'next-auth'
 import ModeTabs from "./ModeTab"
@@ -12,7 +12,7 @@ import { logFocusSession } from '@/lib/focusSession'
 import type { ModeKey } from './ModeTab'
 
 const DURATIONS: Record<ModeKey, number> = {
-    pomodoro: 1500,
+    pomodoro: 20,
     short_break: 300,
     long_break: 600,
 }
@@ -24,7 +24,7 @@ export default function Timer({session}:{ session: Session | null }){
     const [topicId, setTopicId] = useState<string | null>(null)
     const [mode, setMode] = useState<ModeKey>("pomodoro")
     const totalSeconds = DURATIONS[mode]
-    const [secondsLeft, setSecondsLeft] = useState(1500)
+    const [secondsLeft, setSecondsLeft] = useState(DURATIONS.pomodoro)
     const [isRunning, setIsRunning] = useState(false)
     const [cx, cy] = [140, 140]
     const strokeWidth = 30
@@ -40,36 +40,32 @@ export default function Timer({session}:{ session: Session | null }){
     }
 
     useEffect(() => {
-        if (!isRunning) return
-
-        const intervalId = setInterval(() => {
-            setSecondsLeft((prev) => {
-                if (prev <= 0) {
-                    clearInterval(intervalId)
-                    setIsRunning(false)
-
-                    if (mode === "pomodoro") {
-                        if (session?.user?.id) {
-                            logFocusSession(topicId).catch((err) =>
-                                console.error('Failed to log focus session', err)
-                            )
-                        }
-
-                        setCycles((c) => {
-                            const next = c + 1
-                            if (next === 4) giveMedal()
-                            return next
-                        })
-                    }
-                    return 0
-                }
-                return prev - 1
-            })
-        }, 1000)
-
-        return () => clearInterval(intervalId)
-    }, [isRunning, mode, topicId, session])
-
+  if (!isRunning) return
+  const intervalId = setInterval(() => {
+    setSecondsLeft((prev) => {
+      if (prev <= 0) {
+        clearInterval(intervalId)
+        setIsRunning(false)
+        setSecondsLeft(DURATIONS.pomodoro)
+        return 0
+      }
+      return prev - 1
+    })
+  }, 1000)
+  return () => clearInterval(intervalId)
+}, [isRunning])
+useEffect(() => {
+     const logSession=async()=>{
+        if (secondsLeft !== 0 || mode !== "pomodoro" || !session?.user?.id) return
+        try {
+            await logFocusSession(topicId)
+            setCycles((c) => c + 1)
+            } catch (err) {
+            console.error('Failed to log focus session', err)
+            }
+    }
+    logSession();
+}, [secondsLeft])
     const progressRatio = secondsLeft / totalSeconds
     const offset = circumference * progressRatio
 
@@ -80,7 +76,7 @@ export default function Timer({session}:{ session: Session | null }){
     return (
         <section className="pomodoro-card bg-white/40 flex flex-col items-center gap-y-4 backdrop-blur-xs rounded-2xl px-8 py-8 sm:w-100 md:w-120">
             <header className="control-btns flex justify-between w-full mx-8">
-                <IconBtn color='orange' onClick={() => setIsRunning((prev) => !prev)} icon={Play}></IconBtn>
+                <IconBtn color='orange' onClick={() => setIsRunning((prev) => !prev)} icon={isRunning ? Pause : Play}></IconBtn>
                 <IconBtn color='orange' icon={Maximize}></IconBtn>
             </header>
 

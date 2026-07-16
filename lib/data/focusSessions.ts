@@ -1,7 +1,8 @@
-import {prisma} from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
+
 export async function getTimeByTopic(
   userId: string,
-  opts?: { topicId?: string; dateRange?: { gte: Date; lte: Date } }
+  opts?: { topicId?: string; dateRange?: { gte: Date; lte?: Date } }
 ) {
   return prisma.focusSession.groupBy({
     by: ['topicId'],
@@ -11,6 +12,6 @@ export async function getTimeByTopic(
       ...(opts?.dateRange && { date: opts.dateRange }),
     },
     _sum: { duration: true },
-    _count: true,
+    _count: { _all: true },
   })
 }

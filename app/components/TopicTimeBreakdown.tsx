@@ -36,7 +36,7 @@ export default function TopicTimeBreakdown() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/stats/topic-time?range=${range}`)
+    fetch(`/api/stats/topic-name?range=${range}`)
       .then((res) => res.json())
       .then((json) => setData(json))
       .finally(() => setLoading(false));
@@ -46,10 +46,8 @@ export default function TopicTimeBreakdown() {
 
   return (
     <div className="w-full max-w-md rounded-3xl bg-white/70 backdrop-blur-md shadow-lg p-6">
-      {/* Header */}
       <h3 className="font-pixel text-lg text-slate-800 mb-4">time by topic</h3>
 
-      {/* Pill tab selector — matches pomodoro/short break/long break row */}
       <div className="flex gap-2 mb-5">
         {RANGES.map((r) => (
           <button
@@ -78,7 +76,6 @@ export default function TopicTimeBreakdown() {
 
       {!loading && data && data.topics.length > 0 && (
         <>
-          {/* Total pill, styled like the "No topic" badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-1.5 mb-5">
             <span className="w-2 h-2 rounded-full bg-[#D97757]" />
             <span className="text-sm font-pixel text-slate-700">
