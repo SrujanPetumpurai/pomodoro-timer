@@ -29,6 +29,9 @@ export default function Timer({session}:{ session: Session | null }){
     const [cx, cy] = [140, 140]
     const strokeWidth = 30
     const completeSoundRef = useRef<HTMLAudioElement | null>(null)
+
+    const endTimeRef = useRef<number | null>(null) 
+
     const playCompleteSound = () => {
         if (!completeSoundRef.current) {
             completeSoundRef.current = new Audio('/kenney_interface-sounds/Audio/confirmation_002.ogg')
@@ -44,36 +47,73 @@ export default function Timer({session}:{ session: Session | null }){
         setSecondsLeft(DURATIONS[key])
         setMode(key)
         setIsRunning(false)
+        endTimeRef.current = null
+    }
+
+    const syncFromEndTime = () => {
+        if (endTimeRef.current == null) return
+        const remainingMs = endTimeRef.current - Date.now()
+        const remaining = Math.max(0, Math.ceil(remainingMs / 1000))
+        setSecondsLeft(remaining)
+        if (remaining <= 0) {
+            setIsRunning(false)
+            endTimeRef.current = null
+            playCompleteSound()
+        }
     }
 
     useEffect(() => {
-  if (!isRunning) return
-  const intervalId = setInterval(() => {
-    setSecondsLeft((prev) => {
-      if (prev <= 0) {
-          clearInterval(intervalId)
-          setIsRunning(false)
-          playCompleteSound()
-        setSecondsLeft(DURATIONS.pomodoro)
-        return 0
-      }
-      return prev - 1
-    })
-  }, 1000)
-  return () => clearInterval(intervalId)
-}, [isRunning])
-useEffect(() => {
-     const logSession=async()=>{
-        if (secondsLeft !== 0 || mode !== "pomodoro" || !session?.user?.id) return
-        try {
-            await logFocusSession(topicId)
-            setCycles((c) => c + 1)
-            } catch (err) {
-            console.error('Failed to log focus session', err)
+        if (!isRunning) return
+
+        endTimeRef.current = Date.now() + secondsLeft * 1000
+
+        const intervalId = setInterval(syncFromEndTime, 1000)
+
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                syncFromEndTime()
             }
+        }
+        document.addEventListener('visibilitychange', handleVisibility)
+
+        return () => {
+            clearInterval(intervalId)
+            document.removeEventListener('visibilitychange', handleVisibility)
+        }
+    }, [isRunning])
+
+    useEffect(() => {
+        const logSession = async () => {
+            if (secondsLeft !== 0 || mode !== "pomodoro" || !session?.user?.id) return
+            try {
+                await logFocusSession(topicId)
+                setCycles((c) => c + 1)
+            } catch (err) {
+                console.error('Failed to log focus session', err)
+            }
+        }
+        logSession()
+    }, [secondsLeft])
+
+    useEffect(() => {
+        if (secondsLeft === 0 && !isRunning) {
+            setSecondsLeft(DURATIONS.pomodoro)
+        }
+    }, [secondsLeft, isRunning])
+
+    const handleToggleRunning = () => {
+        setIsRunning((prev) => {
+            const next = !prev
+            if (next) {
+                endTimeRef.current = Date.now() + secondsLeft * 1000
+            } else {
+                endTimeRef.current = null
+            }
+            return next
+        })
     }
-    logSession();
-}, [secondsLeft])
+
     const progressRatio = secondsLeft / totalSeconds
     const offset = circumference * progressRatio
 
@@ -84,7 +124,7 @@ useEffect(() => {
     return (
         <section className="pomodoro-card bg-white/40 flex flex-col items-center gap-y-4 backdrop-blur-xs rounded-2xl px-8 py-8 sm:w-100 md:w-120">
             <header className="control-btns flex justify-between w-full mx-8">
-                <IconBtn color='orange' onClick={() => setIsRunning((prev) => !prev)} icon={isRunning ? Pause : Play}></IconBtn>
+                <IconBtn color='orange' onClick={handleToggleRunning} icon={isRunning ? Pause : Play}></IconBtn>
                 <IconBtn color='orange' icon={Maximize}></IconBtn>
             </header>
 
