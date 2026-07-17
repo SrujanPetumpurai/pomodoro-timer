@@ -1,7 +1,7 @@
 "use client";
 
 import { LucideIcon } from "lucide-react";
-
+import { useRef } from "react";
 interface IconButtonProps {
   icon: LucideIcon;
   onClick?: () => void;
@@ -24,10 +24,18 @@ export default function IconBtn({
 }: IconButtonProps) {
   const dims = size === "md" ? "w-14 h-14" : "w-11 h-11";
   const iconSize = size === "md" ? 22 : 18;
-
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const handleClick = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/kenney_interface-sounds/Audio/click_004.ogg");
+    }
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+    onClick?.();
+  };
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={`
         ${dims}
         flex items-center justify-center

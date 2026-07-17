@@ -3,7 +3,7 @@ import './Timer.css'
 import { m6x11 } from '../../lib/fonts'
 import IconBtn from "./IconBtn"
 import { Maximize, Play,Pause } from "lucide-react"
-import { useState, useEffect } from 'react'
+import { useState, useEffect,useRef } from 'react'
 import type { Session } from 'next-auth'
 import ModeTabs from "./ModeTab"
 import Cycle from "./Cycle"
@@ -28,7 +28,14 @@ export default function Timer({session}:{ session: Session | null }){
     const [isRunning, setIsRunning] = useState(false)
     const [cx, cy] = [140, 140]
     const strokeWidth = 30
-
+    const completeSoundRef = useRef<HTMLAudioElement | null>(null)
+    const playCompleteSound = () => {
+        if (!completeSoundRef.current) {
+            completeSoundRef.current = new Audio('/kenney_interface-sounds/Audio/confirmation_002.ogg')
+        }
+        completeSoundRef.current.currentTime = 0
+        completeSoundRef.current.play().catch(() => {})
+    }
     const giveMedal = () => {
         console.log('bronze medal')
     }
@@ -44,8 +51,9 @@ export default function Timer({session}:{ session: Session | null }){
   const intervalId = setInterval(() => {
     setSecondsLeft((prev) => {
       if (prev <= 0) {
-        clearInterval(intervalId)
-        setIsRunning(false)
+          clearInterval(intervalId)
+          setIsRunning(false)
+          playCompleteSound()
         setSecondsLeft(DURATIONS.pomodoro)
         return 0
       }
