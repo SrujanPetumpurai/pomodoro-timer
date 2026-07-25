@@ -13,12 +13,19 @@ export async function GET(req: NextRequest) {
   const range = searchParams.get("range") ?? "all";
   const topicId = searchParams.get("topicId") ?? undefined;
 
-  const now = new Date();
   let dateRange: { gte: Date; lte?: Date } | undefined;
-  if (range === "week") {
-    dateRange = { gte: new Date(now.setDate(now.getDate() - 7)) };
+  if (range === "today") {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    dateRange = { gte: startOfToday };
+  } else if (range === "week") {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    dateRange = { gte: weekAgo };
   } else if (range === "month") {
-    dateRange = { gte: new Date(now.setMonth(now.getMonth() - 1)) };
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    dateRange = { gte: monthAgo };
   }
 
   const grouped = await getTimeByTopic(session.user.id, { topicId, dateRange });

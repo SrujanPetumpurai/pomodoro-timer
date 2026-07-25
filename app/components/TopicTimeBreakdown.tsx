@@ -24,6 +24,7 @@ function formatMinutes(mins: number) {
 }
 
 const RANGES = [
+  { key: "today", label: "today" },
   { key: "week", label: "7 days" },
   { key: "month", label: "30 days" },
   { key: "all", label: "all time" },
