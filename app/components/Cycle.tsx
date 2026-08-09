@@ -7,7 +7,7 @@ export default function Cycle({completedCycles=0}:{completedCycles:number}){
             <div className="flex">
                 {Array.from({length:totalCycles}).map((_,idx)=>{
                     return(
-                        <img key={idx} className="w-14 h-14" src={idx<completedCycles?'/red_tomato.png':'/gray_tomato.png'} alt={idx <completedCycles ? "Completed cycle" : "Pending cycle"} />
+                        <img key={idx} className="w-14 h-14" src={idx<completedCycles?'/sprites/red_tomato.png':'/sprites/gray_tomato.png'} alt={idx <completedCycles ? "Completed cycle" : "Pending cycle"} />
                     )
                 })}
             </div>

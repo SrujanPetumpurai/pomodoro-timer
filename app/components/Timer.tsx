@@ -113,10 +113,13 @@ export default function Timer({session}:{ session: Session | null }){
             return next
         })
     }
-
     const progressRatio = secondsLeft / totalSeconds
     const offset = circumference * progressRatio
-
+    //For naruto sprite
+    const angle = (1 - progressRatio) * 2 * Math.PI - Math.PI / 2
+    const spriteX = cx + radius * Math.cos(angle)
+    const spriteY = cy + radius * Math.sin(angle)
+    const facingDeg = (angle * 180) / Math.PI + 90 
     const minutes = Math.floor(secondsLeft / 60)
     const seconds = secondsLeft % 60
     const displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
@@ -154,6 +157,15 @@ export default function Timer({session}:{ session: Session | null }){
                         style={{ transition: 'stroke-dashoffset 1s linear' }}
                     />
                 </svg>
+                <div
+                    className={`runner ${isRunning ? 'running' : ''}`}
+                    style={{
+                    position: 'absolute',
+                    left: spriteX,
+                    top: spriteY,
+                    transform: `translate(-50%, -50%) rotate(${facingDeg}deg)`,
+                    }}
+                />
                 <div className="inner font-light">
                     <span className={`timer-text ${m6x11.className} text-9xl text-gray-900`}>{displayTime}</span>
                 </div>
