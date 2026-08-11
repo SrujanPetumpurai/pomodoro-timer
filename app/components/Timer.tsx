@@ -2,12 +2,11 @@
 import './Timer.css'
 import { m6x11 } from '../../lib/fonts'
 import IconBtn from "./IconBtn"
-import { Maximize, Play,Pause } from "lucide-react"
-import { useState, useEffect,useRef } from 'react'
+import { Maximize, Play, Pause } from "lucide-react"
+import { useState, useEffect, useRef } from 'react'
 import type { Session } from 'next-auth'
 import ModeTabs from "./ModeTab"
 import Cycle from "./Cycle"
-import TopicPicker from "./TopicPicker"
 import { logFocusSession } from '@/lib/focusSession'
 import type { ModeKey } from './ModeTab'
 
@@ -17,71 +16,80 @@ const DURATIONS: Record<ModeKey, number> = {
     long_break: 600,
 }
 
-export default function Timer({session}:{ session: Session | null }){
-    const radius = 125
-    const circumference = 2 * Math.PI * radius
+
+type Phase = 'idle' | 'charging' | 'running' | 'clashing' | 'blast'
+
+const CHARGE_DURATION_MS = 4000
+
+export default function Timer({ session }: { session: Session | null }) {
+    const [phase, setPhase] = useState<Phase>('idle')
     const [cycles, setCycles] = useState(0)
-    const [topicId, setTopicId] = useState<string | null>(null)
+    const [topicId] = useState<string | null>(null)
     const [mode, setMode] = useState<ModeKey>("pomodoro")
     const totalSeconds = DURATIONS[mode]
     const [secondsLeft, setSecondsLeft] = useState(DURATIONS.pomodoro)
     const [isRunning, setIsRunning] = useState(false)
-    const [cx, cy] = [140, 140]
-    const strokeWidth = 30
     const completeSoundRef = useRef<HTMLAudioElement | null>(null)
+    const CLASH_THRESHOLD = 0.92
+    const endTimeRef = useRef<number | null>(null)
+    const blastSoundRef = useRef<HTMLAudioElement | null>(null)
 
-    const endTimeRef = useRef<number | null>(null) 
-
-    const playCompleteSound = () => {
-        if (!completeSoundRef.current) {
-            completeSoundRef.current = new Audio('/kenney_interface-sounds/Audio/confirmation_002.ogg')
+    const playBlastSound = () => {
+        if (!blastSoundRef.current) {
+            blastSoundRef.current = new Audio('/kenney_interface-sounds/Audio/impact_002.ogg')
         }
-        completeSoundRef.current.currentTime = 0
-        completeSoundRef.current.play().catch(() => {})
+        blastSoundRef.current.currentTime = 0
+        blastSoundRef.current.play().catch(() => {})
     }
+
+    const elapsed = totalSeconds - secondsLeft
+    const progress = Math.min(1, Math.max(0, elapsed / totalSeconds))
+
     const giveMedal = () => {
         console.log('bronze medal')
     }
+
+    useEffect(() => {
+        if (!isRunning) {
+            if (phase !== 'clashing' && phase !== 'blast') {
+                setPhase('idle')
+            }
+            return
+        }
+
+        if (phase === 'idle') {
+            setPhase('charging')
+            const chargeTimer = setTimeout(() => {
+                setPhase('running')
+            }, CHARGE_DURATION_MS)
+            return () => clearTimeout(chargeTimer)
+        }
+    }, [isRunning])
+
+    // --- running -> clashing -> blast, driven by progress ---
+    useEffect(() => {
+        if (progress >= CLASH_THRESHOLD && phase === 'running') {
+            setPhase('clashing')
+            const blastTimer = setTimeout(() => {
+                setPhase('blast')
+                playBlastSound()
+            }, 400) // let the clash pose hold briefly before the blast pops
+            return () => clearTimeout(blastTimer)
+        }
+        // only reset out of clashing/blast when a fresh cycle starts —
+        // don't stomp on 'idle' or 'charging'
+        if (progress < CLASH_THRESHOLD && (phase === 'clashing' || phase === 'blast')) {
+            setPhase('running')
+        }
+    }, [progress, phase])
 
     const handleMode = (key: ModeKey) => {
         setSecondsLeft(DURATIONS[key])
         setMode(key)
         setIsRunning(false)
+        setPhase('idle')
         endTimeRef.current = null
     }
-
-    const syncFromEndTime = () => {
-        if (endTimeRef.current == null) return
-        const remainingMs = endTimeRef.current - Date.now()
-        const remaining = Math.max(0, Math.ceil(remainingMs / 1000))
-        setSecondsLeft(remaining)
-        if (remaining <= 0) {
-            setIsRunning(false)
-            endTimeRef.current = null
-            playCompleteSound()
-        }
-    }
-
-    useEffect(() => {
-        if (!isRunning) return
-
-        endTimeRef.current = Date.now() + secondsLeft * 1000
-
-        const intervalId = setInterval(syncFromEndTime, 1000)
-
-
-        const handleVisibility = () => {
-            if (document.visibilityState === 'visible') {
-                syncFromEndTime()
-            }
-        }
-        document.addEventListener('visibilitychange', handleVisibility)
-
-        return () => {
-            clearInterval(intervalId)
-            document.removeEventListener('visibilitychange', handleVisibility)
-        }
-    }, [isRunning])
 
     useEffect(() => {
         const logSession = async () => {
@@ -113,70 +121,55 @@ export default function Timer({session}:{ session: Session | null }){
             return next
         })
     }
-    const progressRatio = secondsLeft / totalSeconds
-    const offset = circumference * progressRatio
-    //For naruto sprite
-    const angle = (1 - progressRatio) * 2 * Math.PI - Math.PI / 2
-    const spriteX = cx + radius * Math.cos(angle)
-    const spriteY = cy + radius * Math.sin(angle)
-    const facingDeg = (angle * 180) / Math.PI + 90 
+
     const minutes = Math.floor(secondsLeft / 60)
     const seconds = secondsLeft % 60
     const displayTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 
+    // sprites hold at their starting corners while idle/charging,
+    // only start closing the gap once phase === 'running'
+    const runnerProgress =
+        phase === 'idle' || phase === 'charging'
+            ? 0
+            : Math.min(progress, CLASH_THRESHOLD)
+
     return (
-        <section className="pomodoro-card bg-white/40 flex flex-col items-center gap-y-4 backdrop-blur-xs rounded-2xl px-8 py-8 sm:w-100 md:w-120">
-            <header className="control-btns flex justify-between w-full mx-8">
-                <IconBtn color='orange' onClick={handleToggleRunning} icon={isRunning ? Pause : Play}></IconBtn>
-                <IconBtn color='orange' icon={Maximize}></IconBtn>
-            </header>
-
-            {session?.user && (
-                <TopicPicker selectedTopicId={topicId} onSelect={setTopicId} />
-            )}
-
-            <section className="timer">
-               <div className="outer">
-                <svg
-                    className="progress-ring"
-                    viewBox="0 0 280 280"
-                    width="280"
-                    height="280"
-                    style={{ transform: 'rotate(-90deg)' }}
-                >
-                    <circle r={radius} cx={cx} cy={cy} fill="transparent" stroke="white" strokeWidth={strokeWidth} />
-                    <circle
-                        r={radius}
-                        cx={cx}
-                        cy={cy}
-                        fill="transparent"
-                        strokeWidth={strokeWidth}
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={offset}
-                        style={{ transition: 'stroke-dashoffset 1s linear' }}
-                    />
-                </svg>
-                <div
-                    className={`runner ${isRunning ? 'running' : ''}`}
-                    style={{
-                    position: 'absolute',
-                    left: spriteX,
-                    top: spriteY,
-                    transform: `translate(-50%, -50%) rotate(${facingDeg}deg)`,
-                    }}
-                />
-                <div className="inner font-light">
-                    <span className={`timer-text ${m6x11.className} text-9xl text-gray-900`}>{displayTime}</span>
+        <section className="relative w-full h-screen">
+            <div className="absolute left-0 right-0 px-16">
+                <div className="flex justify-center mt-8">
+                    <span className={`timer-text ${m6x11.className} text-8xl text-gray-900`}>
+                        {displayTime}
+                    </span>
                 </div>
-               </div>
-            </section>
-            <section className="pomo-cycle">
-                <Cycle completedCycles={cycles}></Cycle>
-            </section>
-            <section className="modes">
-                <ModeTabs onChange={(key: ModeKey) => handleMode(key)}></ModeTabs>
-            </section>
+                <div className="relative w-full h-[6px] bg-white/40 rounded-full">
+                    <div
+                        className="absolute left-0 top-0 h-full bg-[#D97757] rounded-full"
+                        style={{ width: `${progress * 100}%`, transition: 'width 1s linear' }}
+                    />
+                    <div
+                        className={`runner-naruto absolute -top-16 ${phase}`}
+                        style={{
+                            left: `calc(${runnerProgress * 50}% - 15px)`,
+                            transition: phase === 'running' ? 'left 1s linear' : 'none',
+                        }}
+                    />
+                    <div
+                        className={`runner-sasuke absolute -top-16 ${phase}`}
+                        style={{
+                            right: `calc(${runnerProgress * 50}% - 15px)`,
+                            transition: phase === 'running' ? 'right 1s linear' : 'none',
+                        }}
+                    />
+                </div>
+                <div
+                    className={`blast-effect absolute -top-20 left-1/2 -translate-x-1/2 ${
+                        phase === 'blast' ? 'blast-active' : 'opacity-0'
+                    }`}
+                />
+                <header className="control-btns mt-8 flex justify-center w-full px-8 pt-8">
+                    <IconBtn color='orange' onClick={handleToggleRunning} icon={isRunning ? Pause : Play}></IconBtn>
+                </header>
+            </div>
         </section>
     )
 }
