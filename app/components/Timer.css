@@ -3,7 +3,6 @@
   transform: scaleY(0.99) scaleX(0.70);
 }
 
-/* shared runner base */
 .runner-naruto,
 .runner-sasuke {
   width: 60px;
@@ -16,9 +15,10 @@
   background-image: url("/sprites/NarutoSprite.png");
 }
 
+
 .runner-sasuke {
   background-image: url("/sprites/SasukeSprite.png");
-  transform: scaleX(-1); /* faces left, running in from the right */
+  transform: scaleX(-1); 
 }
 
 
@@ -99,16 +99,40 @@
   75%  { background-position:  69%  75%; }
   100% { background-position: 98%  75%; }
 }
-
+/* CLashing */
 .runner-naruto.clashing {
-  animation: none;
-  background-size: 600px 380px;    
+  background-image: url("/sprites/NarutoClash.png");
+  background-size: 1464px 609px;
+  animation: naruto-clash 1.35s steps(1) forwards;
+}
+@keyframes naruto-clash {
+  0%     { width: 100px; background-position: 14.22% 11.63%; }
+  12.5%  { background-position: 50%    11.63%; }
+  25%    { background-position: 85.78% 11.63%; }
+  37.5%  { background-position: 14.22% 50%; }
+  50%    { background-position: 50%    50%; }
+  62.5%  { background-position: 85.78% 50%; }
+  75%    { background-position: 14.22% 88.37%; }
+  87.5%  { background-position: 50%    88.37%; }
+  100%   { background-position: 85.78% 88.37%; }
 }
 
-.runner-naruto.blast {
-  display: none;
+.runner-sasuke.clashing {
+  background-image: url("/sprites/SasukeClash.png");
+  background-size: 1335px 609px;
+  animation: sasuke-clash 1.35s steps(1) forwards;
 }
-
+@keyframes sasuke-clash {
+  0%     { width: 100px; background-position: 13.97% 11.63%; }
+  12.5%  { background-position: 50%    11.63%; }
+  25%    { background-position: 86.03% 11.63%; }
+  37.5%  { background-position: 13.97% 50%; }
+  50%    { background-position: 50%    50%; }
+  62.5%  { background-position: 86.03% 50%; }
+  75%    { background-position: 13.97% 88.37%; }
+  87.5%  { background-position: 50%    88.37%; }
+  100%   { background-position: 86.03% 88.37%; }
+}
 .runner-sasuke.idle {
   background-size: 600px 380px;    
   animation: sasuke-idle 2s steps(1) infinite;
@@ -133,10 +157,6 @@
   100% { background-position: 97%  29%; }
 }
 
-.runner-sasuke.running,
-.runner-sasuke.clashing {
-  background-size: 700% 500%;   
-}
 
 .runner-sasuke.running {
   animation: sasuke-run 2s steps(1) infinite;
@@ -153,12 +173,9 @@
   100% { background-position: 100%  55%; }
 }
 
-/* frozen pose right before impact — row 3 (75%) */
-.runner-sasuke.clashing {
-  animation: none;
-  background-position: 100% 75%;
+.runner-naruto.blast {
+  display: none;
 }
-
 .runner-sasuke.blast {
   display: none;
 }
